@@ -18,7 +18,7 @@ spec:
       containers:
         - name: jenkins-master
           # Sua imagem Docker
-          image: andersongomesc/jenkins01:0.2
+          image: andersongomesc/jenkins01:{{tag}}
 
           # Padrão: usa a porta 8080 para o Jenkins
           ports:
