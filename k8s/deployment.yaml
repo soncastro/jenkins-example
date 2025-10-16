@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jenkins-deployment
+  name: apiteste-deployment
   labels:
-    app: jenkins
+    app: api
 spec:
   # Garante que sempre haverá 1 Pod rodando
   replicas: 2
   selector:
     matchLabels:
-      app: jenkins
+      app: apiteste
   template:
     metadata:
       labels:
-        app: jenkins
+        app: apiteste
     spec:
       containers:
-        - name: jenkins-master
+        - name: apiteste
           # Sua imagem Docker
-          image: andersongomesc/jenkins01:{{tag}}
+          image: andersongomesc/apiteste:{{tag}}
 
           # Padrão: usa a porta 8080 para o Jenkins
           ports:
