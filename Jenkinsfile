@@ -11,7 +11,7 @@ pipeline {
         stage('Buid Image') {
             steps {
                 script {
-                    dockerapp = docker.build("andersongomesc/jenkins01:${env.BUILD_ID}", '.'
+                    dockerapp = docker.build("andersongomesc/jenkins01:${env.BUILD_ID}", '.')
                 }
             }
         }
