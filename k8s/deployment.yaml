@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  labels:
+    app: jenkins
+spec:
+  # Garante que sempre haverá 1 Pod rodando
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+        - name: jenkins-master
+          # Sua imagem Docker
+          image: andersongomesc/jenkins01:0.2
+
+          # Padrão: usa a porta 8080 para o Jenkins
+          ports:
+            - containerPort: 8080
+              name: http-port
+
+            # Padrão: usa a porta 50000 para comunicação JNLP (Agentes)
+            - containerPort: 50000
+              name: jnlp-port
