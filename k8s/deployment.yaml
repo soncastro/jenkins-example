@@ -18,7 +18,7 @@ spec:
       containers:
         - name: apiteste
           # Sua imagem Docker
-          image: andersongomesc/apiteste2:{{tag}}
+          image: andersongomesc/jenkins01:{{tag}}
 
           # Padrão: usa a porta 8080 para o Jenkins
           ports:
