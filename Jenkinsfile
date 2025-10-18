@@ -1,5 +1,26 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - name: kaniko-secret
+      mountPath: /kaniko/.docker
+  volumes:
+  - name: kaniko-secret
+    secret:
+      secretName: dockerhub-secret
+"""
+        }
+    }
 
     environment {
         REGISTRY = "docker.io"
@@ -16,9 +37,6 @@ pipeline {
         }
 
         stage('Checkout') {
-//             steps {
-//                 checkout scm
-//             }
             steps {
                 git url:'https://github.com/soncastro/jenkins-example.git', branch:'main'
             }
