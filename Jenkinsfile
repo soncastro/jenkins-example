@@ -61,8 +61,8 @@ pipeline {
                         # Tornar executável
                         chmod +x kubectl
 
-                        echo "kubectl versão:"
-                        ./kubectl version --client --short
+                        echo "kubectl versão (apenas --client):"
+                        ./kubectl version --client
 
                         echo "kubectl pronto para uso."
                     '''
