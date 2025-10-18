@@ -1,12 +1,14 @@
 pipeline {
     agent any
 
-    stage('Verificar Usuário') {
-        steps {
-            sh 'whoami'
-        }
-    }
     stages {
+
+        stage('Verificar Usuário') {
+            steps {
+                sh 'whoami'
+            }
+        }
+
         stage('Checkout Source') {
             steps {
                 git url:'https://github.com/soncastro/jenkins-example.git', branch:'main'
