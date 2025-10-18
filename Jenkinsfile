@@ -31,7 +31,6 @@ pipeline {
             agent {
                 kubernetes {
                     cloud 'kubernetes'
-                    credentialsId 'kubeconfig'
                 }
             }
             environment {
