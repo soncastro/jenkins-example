@@ -42,12 +42,29 @@ pipeline {
                     sh 'cat ./k8s/deployment.yaml'
 
                     sh '''
-                        echo "Instalando kubectl no Agente..."
-                        # Atualiza os índices e instala o kubectl. A flag --no-cache otimiza o uso de espaço.
-                        # Esta operação é feita com as permissões do usuário do contêiner (geralmente root ou jenkins)
-                        apk update --no-cache
-                        apk add kubectl
-                        echo "kubectl instalado com sucesso!"
+                        echo "Baixando o binário do kubectl para o Agente..."
+
+                        # Definindo a versão
+                        KUBE_VERSION="v1.28.0"
+                        KUBECTL_URL="https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl"
+
+                        # Tentativa de download com curl, fallback para wget
+                        if command -v curl >/dev/null 2>&1; then
+                          curl -sLO $KUBECTL_URL
+                        elif command -v wget >/dev/null 2>&1; then
+                          wget -q $KUBECTL_URL
+                        else
+                          echo "ERRO CRÍTICO: Nem 'curl' nem 'wget' encontrados para baixar kubectl. O agente está muito minimalista."
+                          exit 1
+                        fi
+
+                        # Tornar executável
+                        chmod +x kubectl
+
+                        echo "kubectl versão:"
+                        ./kubectl version --client --short
+
+                        echo "kubectl pronto para uso."
                     '''
 
                     withKubeConfig(credentialsId: 'kubeconfig') {
