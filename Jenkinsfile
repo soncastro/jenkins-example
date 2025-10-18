@@ -40,6 +40,23 @@ pipeline {
                 script {
                     sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/deployment.yaml'
                     sh 'cat ./k8s/deployment.yaml'
+
+                    sh '''
+                        # Instala o kubectl (assumindo um sistema de pacotes baseado em apt/get, comum em muitas bases)
+                        # Este bloco pode falhar se o Agente tiver permissões restritas ou um OS diferente.
+                        # Uma solução mais robusta seria usar uma imagem base como 'bitnami/kubectl'
+                        # ou 'ubuntu:latest' no 'agent { container '...' }'
+
+                        echo "Tentando instalar kubectl..."
+                        if command -v apt >/dev/null 2>&1; then
+                          sudo apt-get update -qq && sudo apt-get install -y kubectl
+                        elif command -v apk >/dev/null 2>&1; then
+                          sudo apk add kubectl
+                        else
+                          echo "Erro: Não foi possível encontrar apt ou apk para instalar kubectl."
+                        fi
+                    '''
+
                     withKubeConfig(credentialsId: 'kubeconfig') {
                         sh 'kubectl apply -f ./k8s/'
                     }
