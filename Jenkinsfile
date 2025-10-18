@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     environment {
+        REGISTRY = "docker.io"
         IMAGE_NAME = "andersongomesc/jenkins01"
+        K8S_NAMESPACE = "default"
     }
 
     stages {
@@ -13,76 +15,59 @@ pipeline {
             }
         }
 
-        stage('Checkout Source') {
+        stage('Checkout') {
+//             steps {
+//                 checkout scm
+//             }
             steps {
-                git url: 'https://github.com/soncastro/jenkins-example.git', branch: 'main'
+                git url:'https://github.com/soncastro/jenkins-example.git', branch:'main'
             }
         }
 
-        stage('Build & Push Image com Kaniko') {
-            agent {
-                docker {
-                    // Usa o executor oficial do Kaniko
-                    image 'gcr.io/kaniko-project/executor:latest'
-                    args '-u root:root -v /kaniko/.docker:/kaniko/.docker'
-                }
-            }
-            environment {
-                IMAGE_TAG = "${env.BUILD_ID}"
-            }
+        stage('Build com Kaniko') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "===> Configurando autenticação Docker Hub para o Kaniko..."
-                        mkdir -p /kaniko/.docker
-                        echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$(echo -n '${DOCKER_USER}:${DOCKER_PASS}' | base64)\"}}}" > /kaniko/.docker/config.json
+                script {
+                    // Recupera as credenciais salvas no Jenkins (tipo "Username with password")
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
 
-                        echo "===> Iniciando build e push da imagem com Kaniko..."
+                        sh """
+                        # Cria diretório temporário para o auth.json do Docker
+                        mkdir -p /kaniko/.docker
+
+                        # Gera arquivo de credencial para o Kaniko
+                        echo '{"auths":{"$REGISTRY":{"username":"$DOCKER_USER","password":"$DOCKER_PASS"}}}' > /kaniko/.docker/config.json
+
+                        # Executa o Kaniko para buildar e enviar a imagem
                         /kaniko/executor \
                           --context `pwd` \
                           --dockerfile `pwd`/Dockerfile \
-                          --destination=${IMAGE_NAME}:${IMAGE_TAG} \
-                          --destination=${IMAGE_NAME}:latest \
-                          --cache=true
-                    '''
+                          --destination $REGISTRY/$IMAGE_NAME:latest \
+                          --cleanup
+                        """
+                    }
                 }
             }
         }
 
-        stage('Deploy Kubernetes') {
-            agent {
-                kubernetes {
-                    cloud 'kubernetes'
-                }
-            }
-            environment {
-                tag_version = "${env.BUILD_ID}"
-            }
+        stage('Deploy no Kubernetes') {
             steps {
                 script {
-                    sh '''
-                        echo "===> Atualizando versão da imagem no manifesto Kubernetes..."
-                        sed -i "s/{{tag}}/$tag_version/g" ./k8s/deployment.yaml
-                        cat ./k8s/deployment.yaml
-                    '''
-
-                    sh '''
-                        echo "===> Baixando kubectl..."
-                        KUBE_VERSION="v1.28.0"
-                        KUBECTL_URL="https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl"
-                        curl -sLO $KUBECTL_URL
-                        chmod +x kubectl
-                        ./kubectl version --client
-                    '''
-
-                    withKubeConfig(credentialsId: 'kubeconfig') {
-                        sh '''
-                            echo "===> Aplicando manifestos no cluster Kubernetes..."
-                            ./kubectl apply -f ./k8s/
-                        '''
-                    }
+                    sh """
+                    kubectl set image deployment/jenkins01 \
+                      jenkins01=$REGISTRY/$IMAGE_NAME:latest \
+                      -n $K8S_NAMESPACE
+                    """
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deploy realizado com sucesso!'
+        }
+        failure {
+            echo 'Falha na pipeline.'
         }
     }
 }
