@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    stage('Verificar Usuário') {
+        steps {
+            sh 'whoami'
+        }
+    }
     stages {
         stage('Checkout Source') {
             steps {
