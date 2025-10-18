@@ -41,6 +41,7 @@ pipeline {
                     sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/deployment.yaml'
                     sh 'cat ./k8s/deployment.yaml'
 
+                    // CORREÇÃO ROBUSTA: Baixar e usar o binário do kubectl.
                     sh '''
                         echo "Baixando o binário do kubectl para o Agente..."
 
@@ -65,10 +66,23 @@ pipeline {
                         ./kubectl version --client
 
                         echo "kubectl pronto para uso."
+
+                        # NOVO: Imprime o caminho absoluto para ser capturado pela variável Groovy.
+                        pwd > .kubectl_pwd
                     '''
 
+                    // Captura o caminho absoluto do workspace em Groovy e define a variável de ambiente
+                    def kubectl_path = sh(returnStdout: true, script: 'cat .kubectl_pwd').trim()
+                    env.KUBECTL_PATH = "${kubectl_path}/kubectl"
+                    echo "Caminho Absoluto do Kubectl Definido: ${env.KUBECTL_PATH}"
+
+                    // NOVO: Usa o step 'withKubeConfig' para carregar a credencial
+                    // e executa o comando 'kubectl' usando o caminho absoluto (${env.KUBECTL_PATH})
                     withKubeConfig(credentialsId: 'kubeconfig') {
-                        sh 'kubectl apply -f ./k8s/'
+                        sh """
+                            # Aplica todos os manifestos YAML na pasta k8s usando o caminho absoluto.
+                            ${env.KUBECTL_PATH} apply -f ./k8s/
+                        """
                     }
                 }
             }
