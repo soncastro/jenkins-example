@@ -42,19 +42,12 @@ pipeline {
                     sh 'cat ./k8s/deployment.yaml'
 
                     sh '''
-                        # Instala o kubectl (assumindo um sistema de pacotes baseado em apt/get, comum em muitas bases)
-                        # Este bloco pode falhar se o Agente tiver permissões restritas ou um OS diferente.
-                        # Uma solução mais robusta seria usar uma imagem base como 'bitnami/kubectl'
-                        # ou 'ubuntu:latest' no 'agent { container '...' }'
-
-                        echo "Tentando instalar kubectl..."
-                        if command -v apt >/dev/null 2>&1; then
-                          sudo apt-get update -qq && sudo apt-get install -y kubectl
-                        elif command -v apk >/dev/null 2>&1; then
-                          sudo apk add kubectl
-                        else
-                          echo "Erro: Não foi possível encontrar apt ou apk para instalar kubectl."
-                        fi
+                        echo "Instalando kubectl no Agente..."
+                        # Atualiza os índices e instala o kubectl. A flag --no-cache otimiza o uso de espaço.
+                        # Esta operação é feita com as permissões do usuário do contêiner (geralmente root ou jenkins)
+                        apk update --no-cache
+                        apk add kubectl
+                        echo "kubectl instalado com sucesso!"
                     '''
 
                     withKubeConfig(credentialsId: 'kubeconfig') {
