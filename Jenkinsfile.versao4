@@ -1,0 +1,6 @@
+stage('Deploy no Kubernetes') {
+    steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+        }
+    }
+}
