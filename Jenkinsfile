@@ -40,9 +40,7 @@ pipeline {
                 script {
                     sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/deployment.yaml'
                     sh 'cat ./k8s/deployment.yaml'
-                    sh 'kubectl config use-context cluster-jenkins-01'
-                    sh 'kubectl apply -f ./k8s/deployment.yaml'
-                    sh 'kubectl apply -f ./k8s/service.yaml'
+                    sh '/usr/local/bin/kubectl apply -f ./k8s/ --kubeconfig=/home/son/.kube/config'
                 }
             }
         }
