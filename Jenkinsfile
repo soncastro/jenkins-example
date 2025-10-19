@@ -35,7 +35,7 @@ pipeline {
                 script {
                     sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/deployment.yaml'
                     sh 'cat ./k8s/deployment.yaml'
-                    sh 'kubectl config use-context cluster-jenkins-01'
+                    sh 'kubectl config use-context kind-cluster-jenkins-01'
                     sh "kind load docker-image andersongomesc/jenkins01:${env.BUILD_ID} --name cluster-jenkins-01"
                     sh 'kubectl apply -f ./k8s/'
                 }
