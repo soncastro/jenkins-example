@@ -21,7 +21,7 @@ public class JenkinsController {
     @GetMapping
     public ResponseEntity<String> helloJenkins() {
         String str = this.jenkinsService.saida();
-        return ResponseEntity.ok("versao 2");
+        return ResponseEntity.ok("versao 3");
     }
 
 }
