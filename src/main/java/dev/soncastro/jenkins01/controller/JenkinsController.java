@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/jenkins")
@@ -14,14 +15,17 @@ public class JenkinsController {
 
     private final JenkinsService jenkinsService;
 
+    private final String strUUID;
+
     public JenkinsController(JenkinsService jenkinsService) {
         this.jenkinsService = jenkinsService;
+        this.strUUID = UUID.randomUUID().toString();
     }
 
     @GetMapping
     public ResponseEntity<String> helloJenkins() {
-        String str = this.jenkinsService.saida();
-        return ResponseEntity.ok("versao 3");
+        this.jenkinsService.saida();
+        return ResponseEntity.ok(this.strUUID);
     }
 
 }
