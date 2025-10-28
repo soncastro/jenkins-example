@@ -6,7 +6,7 @@ metadata:
     app: api
 spec:
   # Garante que sempre haverá 1 Pod rodando
-  replicas: 10
+  replicas: 3
   selector:
     matchLabels:
       app: apiteste
