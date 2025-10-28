@@ -5,7 +5,7 @@ metadata:
 spec:
   # ------------------------------------------------------------------
   # CAMPO ADICIONADO: Define o tipo de Service como LoadBalancer
-  type: LoadBalancer
+  type: NodePort
   # ------------------------------------------------------------------
   selector:
     app: apiteste
